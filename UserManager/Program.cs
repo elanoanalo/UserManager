@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using UserManager.Data;
+using UserManager.Filters;
 using UserManager.Repositories;
+using UserManager.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,7 +28,14 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<UserStatusFilter>();
+
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.AddService<UserStatusFilter>();
+});
+
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 var app = builder.Build();
 
@@ -39,6 +48,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseStaticFiles();
 
 app.UseRouting();

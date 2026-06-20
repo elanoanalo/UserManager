@@ -6,16 +6,19 @@ using UserManager.ViewModels;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using UserManager.Services;
 
 namespace UserManager.Controllers
 {
     public class AccountController : Controller
     {
         private readonly IUserRepository _userRepository;
+        private readonly IEmailService _emailService;
 
-        public AccountController(IUserRepository userRepository)
+        public AccountController(IUserRepository userRepository, IEmailService emailService)
         {
             _userRepository = userRepository;
+            _emailService = emailService;
         }
 
         [HttpGet]
@@ -28,30 +31,34 @@ namespace UserManager.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
-            string passwordHash = BCrypt.Net.BCrypt.HashPassword(model.Password);
-
-            var user = new User
-            {
-                Name = model.Name,
-                Email = model.Email.ToLower().Trim(),
-                PasswordHash = passwordHash,
-                Status = UserStatus.Unverified,
-                CreatedAt = DateTime.UtcNow
-            };
+            if (!ModelState.IsValid) return View(model);
 
             try
             {
+                var user = new User
+                {
+                    Name = model.Name.Trim(),
+                    Email = model.Email.ToLower().Trim(),
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password),
+                    Status = UserStatus.Unverified,
+                    CreatedAt = DateTime.UtcNow
+                };
+
                 await _userRepository.AddAsync(user);
 
-                TempData["SuccessMessage"] = "Регистрация успешна! Ваш статус: Unverified.";
+                var confirmationLink = Url.Action(
+                    "ConfirmEmail",
+                    "Account",
+                    new { userId = user.Id },
+                    protocol: HttpContext.Request.Scheme) ?? string.Empty;
+
+                _ = _emailService.SendConfirmationEmailAsync(user.Email, confirmationLink);
+
+                TempData["SuccessMessage"] = "Регистрация успешна! На вашу почту отправлено письмо для подтверждения аккаунта.";
+
                 return RedirectToAction("Login");
             }
-            catch (DbUpdateException)
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException)
             {
                 ModelState.AddModelError("Email", "Пользователь с таким Email уже зарегистрирован.");
                 return View(model);
@@ -92,8 +99,8 @@ namespace UserManager.Controllers
             }
 
             user.LastLogin = DateTime.UtcNow;
-
             await _userRepository.UpdateAsync(user);
+
 
             var claims = new List<Claim>
     {
@@ -107,6 +114,34 @@ namespace UserManager.Controllers
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
 
             return RedirectToAction("Index", "Users");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ConfirmEmail(int userId)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+
+            if (user == null)
+            {
+                return NotFound("Пользователь не найден.");
+            }
+
+            if (user.Status == UserStatus.Unverified)
+            {
+                user.Status = UserStatus.Active; 
+                await _userRepository.UpdateAsync(user);
+                TempData["SuccessMessage"] = "Электронная почта успешно подтверждена! Теперь вы можете войти.";
+            }
+            else if (user.Status == UserStatus.Blocked)
+            {
+                TempData["ErrorMessage"] = "Этот аккаунт заблокирован администратором. Подтверждение невозможно.";
+            }
+            else if (user.Status == UserStatus.Active)
+            {
+                TempData["SuccessMessage"] = "Ваш Email уже был подтвержден ранее.";
+            }
+
+            return RedirectToAction("Login");
         }
 
         [HttpPost]

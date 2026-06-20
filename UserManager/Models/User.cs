@@ -5,7 +5,7 @@ namespace UserManager.Models
     public enum UserStatus
     {
         Unverified = 0,
-        Active = 1, 
+        Active = 1,
         Blocked = 2
     }
 
@@ -26,6 +26,7 @@ namespace UserManager.Models
 
         public UserStatus Status { get; set; } = UserStatus.Unverified;
 
+        public UserStatus? PreviousStatus { get; set; }
 
         public DateTime? LastLogin { get; set; }
 

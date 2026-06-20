@@ -30,8 +30,9 @@ namespace UserManager.Controllers
             foreach (var id in ids)
             {
                 var user = await _userRepository.GetByIdAsync(id);
-                if (user != null)
+                if (user != null && user.Status != UserStatus.Blocked)
                 {
+                    user.PreviousStatus = user.Status;
                     user.Status = UserStatus.Blocked;
                     await _userRepository.UpdateAsync(user);
                 }
@@ -50,7 +51,8 @@ namespace UserManager.Controllers
                 var user = await _userRepository.GetByIdAsync(id);
                 if (user != null && user.Status == UserStatus.Blocked)
                 {
-                    user.Status = UserStatus.Active;
+                    user.Status = user.PreviousStatus ?? UserStatus.Active;
+                    user.PreviousStatus = null; 
                     await _userRepository.UpdateAsync(user);
                 }
             }
@@ -79,7 +81,6 @@ namespace UserManager.Controllers
             foreach (var id in ids)
             {
                 var user = await _userRepository.GetByIdAsync(id);
-                // Удаляем только если у пользователя статус Unverified
                 if (user != null && user.Status == UserStatus.Unverified)
                 {
                     await _userRepository.DeleteAsync(id);
