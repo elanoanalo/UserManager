@@ -1,8 +1,8 @@
 ﻿FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 COPY . .
-RUN dotnet restore "UserManager.csproj"
-RUN dotnet publish "UserManager.csproj" -c Release -o /app/publish
+RUN dotnet restore "UserManager/UserManager.csproj"
+RUN dotnet publish "UserManager/UserManager.csproj" -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
