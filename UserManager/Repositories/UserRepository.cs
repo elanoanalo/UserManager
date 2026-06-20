@@ -25,7 +25,6 @@ namespace UserManager.Repositories
 
         public async Task<IEnumerable<User>> GetAllAsync()
         {
-            // Сразу выполняем требование ТЗ по сортировке (по времени последнего входа)
             return await _context.Users
                 .OrderByDescending(u => u.LastLogin)
                 .ToListAsync();
