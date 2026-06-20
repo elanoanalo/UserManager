@@ -13,24 +13,26 @@
     </div>
 
     <div class="card bg-light mb-3 shadow-sm">
-        <div class="card-body py-2 d-flex align-items-center gap-2">
+        <div class="card-body p-2">
+            <div class="d-flex flex-wrap gap-2">
 
-            <button type="button" id="btnBlock" class="btn btn-warning btn-sm" title="Заблокировать">
-                <i class="bi bi-lock-fill"></i> Заблокировать
-            </button>
+                <button type="button" id="btnBlock" class="btn btn-warning btn-sm flex-fill flex-md-grow-0" title="Заблокировать">
+                    <i class="bi bi-lock-fill"></i> Заблокировать
+                </button>
 
-            <button type="button" id="btnUnblock" class="btn btn-success btn-sm" title="Разблокировать">
-                <i class="bi bi-unlock-fill"></i> Разблокировать
-            </button>
+                <button type="button" id="btnUnblock" class="btn btn-success btn-sm flex-fill flex-md-grow-0" title="Разблокировать">
+                    <i class="bi bi-unlock-fill"></i> Разблокировать
+                </button>
 
-            <button type="button" id="btnDelete" class="btn btn-danger btn-sm" title="Удалить полностью">
-                <i class="bi bi-trash-fill"></i> Удалить
-            </button>
+                <button type="button" id="btnDelete" class="btn btn-danger btn-sm flex-fill flex-md-grow-0" title="Удалить полностью">
+                    <i class="bi bi-trash-fill"></i> Удалить
+                </button>
 
-            <button type="button" id="btnDeleteUnverified" class="btn btn-outline-danger btn-sm" title="Удалить неподтвержденных">
-                <i class="bi bi-person-x-fill"></i> Удалить неподтвержденных
-            </button>
+                <button type="button" id="btnDeleteUnverified" class="btn btn-outline-danger btn-sm flex-fill flex-md-grow-0" title="Удалить неподтвержденных">
+                    <i class="bi bi-person-x-fill"></i> Удалить неподтвержд.
+                </button>
 
+            </div>
         </div>
     </div>
 
@@ -86,24 +88,29 @@
 
     <script>
         $(document).ready(function () {
-            var table = $('#usersTable').DataTable({
-                "paging": false,       
-                "info": false,        
-                "searching": true,    
-                "columnDefs": [
-                    { "orderable": false, "targets": 0 } 
-                ],
-                "language": {
-                    "search": "Поиск по таблице:" 
-                }
-            });
-
-            document.getElementById('selectAll').addEventListener('change', function () {
-                const checkboxes = document.querySelectorAll('.user-checkbox');
-                checkboxes.forEach(cb => cb.checked = this.checked);
-            });
+      
+        var table = $('#usersTable').DataTable({
+        "paging": false,       
+        "info": false,         
+        "searching": true,   
+        "order": [[1, 'asc']], 
+        "columnDefs": [
+        {
+        "orderable": false,
+        "targets": 0,   
+        "className": "" 
+        }
+        ],
+        "language": {
+        "search": "Поиск по таблице:"
+        }
         });
 
+        document.getElementById('selectAll').addEventListener('change', function () {
+        const checkboxes = document.querySelectorAll('.user-checkbox');
+        checkboxes.forEach(cb => cb.checked = this.checked);
+        });
+        });
         function getSelectedIds() {
             const checkboxes = document.querySelectorAll('.user-checkbox:checked');
             return Array.from(checkboxes).map(cb => parseInt(cb.value));

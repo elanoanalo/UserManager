@@ -21,9 +21,9 @@ namespace UserManager.Services
                     System.Diagnostics.Debug.WriteLine($"ССЫЛКА ДЛЯ ПОДТВЕРЖДЕНИЯ: {confirmationLink}");
                     System.Diagnostics.Debug.WriteLine($"===============================");
 
-                    var fromAddress = new MailAddress("elanoanalo@gmail.com", "User Auth System");
+                    var fromAddress = new MailAddress("gaukhar.kozhikenova@gmail.com", "User Auth System");
                     var toAddress = new MailAddress(toEmail);
-                    const string fromPassword = "xvye dwcv rabf neca"; 
+                    const string fromPassword = "jeod jxpc bghs gpnz"; 
                     const string subject = "Подтверждение регистрации";
                     string body = $"Привет! Для подтверждения аккаунта перейдите по ссылке: {confirmationLink}";
 
